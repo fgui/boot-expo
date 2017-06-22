@@ -14,13 +14,41 @@
          '[adzerk.boot-cljs-repl :refer [cljs-repl start-repl]])
 
 
+(defn get-lan-ip
+  []
+  (cond
+    (some #{(System/getProperty "os.name")} ["Mac OS X" "Windows 10"])
+    (.getHostAddress (java.net.InetAddress/getLocalHost))
+
+    :else
+    (->> (java.net.NetworkInterface/getNetworkInterfaces)
+         (enumeration-seq)
+         (filter #(not (or (clojure.string/starts-with? (.getName %) "docker")
+                           (clojure.string/starts-with? (.getName %) "br-"))))
+         (map #(.getInterfaceAddresses %))
+         (map
+          (fn [ip]
+            (seq (filter #(instance?
+                           java.net.Inet4Address
+                           (.getAddress %))
+                         ip))))
+         (remove nil?)
+         (first)
+         (filter #(instance?
+                   java.net.Inet4Address
+                   (.getAddress %)))
+         (first)
+         (.getAddress)
+         (.getHostAddress))))
+
+
 (deftask dev
   "Start development environment"
   []
-  (let [hostname (.getHostName (java.net.InetAddress/getLocalHost))]
+  (let [lan-ip (get-lan-ip)] 
     (comp
      (watch)
-     (reload :ip "0.0.0.0" :ws-host hostname)
-     (cljs-repl :ip "0.0.0.0" :ws-host hostname)
+     (reload :ip "0.0.0.0" :ws-host lan-ip)
+     (cljs-repl :ip "0.0.0.0" :ws-host lan-ip)
      (cljs)
      (target :dir #{"target"}))))
