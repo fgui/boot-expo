@@ -7,48 +7,25 @@
                  [adzerk/boot-cljs-repl "0.3.3"]
                  [com.cemerick/piggieback "0.2.1"]
                  [weasel "0.7.0"]
-                 [org.clojure/tools.nrepl "0.2.12"]])
+                 [org.clojure/tools.nrepl "0.2.12"]
+                 ]
+ )
 
 (require '[adzerk.boot-cljs :refer [cljs]]
          '[adzerk.boot-reload :refer [reload]]
          '[adzerk.boot-cljs-repl :refer [cljs-repl start-repl]])
 
 
-(defn get-lan-ip
-  []
-  (cond
-    (some #{(System/getProperty "os.name")} ["Mac OS X" "Windows 10"])
-    (.getHostAddress (java.net.InetAddress/getLocalHost))
-
-    :else
-    (->> (java.net.NetworkInterface/getNetworkInterfaces)
-         (enumeration-seq)
-         (filter #(not (or (clojure.string/starts-with? (.getName %) "docker")
-                           (clojure.string/starts-with? (.getName %) "br-"))))
-         (map #(.getInterfaceAddresses %))
-         (map
-          (fn [ip]
-            (seq (filter #(instance?
-                           java.net.Inet4Address
-                           (.getAddress %))
-                         ip))))
-         (remove nil?)
-         (first)
-         (filter #(instance?
-                   java.net.Inet4Address
-                   (.getAddress %)))
-         (first)
-         (.getAddress)
-         (.getHostAddress))))
-
 
 (deftask dev
-  "Start development environment"
-  []
-  (let [lan-ip (get-lan-ip)] 
+  "Start development environqment"
+  [i ip IP str "lan ip"]
+  (let [ws-host (if (nil? ip)
+                  (.getHostName (java.net.InetAddress/getLocalHost))
+                  ip)]
     (comp
      (watch)
-     (reload :ip "0.0.0.0" :ws-host lan-ip)
-     (cljs-repl :ip "0.0.0.0" :ws-host lan-ip)
+     (reload :ip "0.0.0.0" :ws-host ws-host)
+     (cljs-repl :ip "0.0.0.0" :ws-host ws-host)
      (cljs)
      (target :dir #{"target"}))))
