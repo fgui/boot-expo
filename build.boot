@@ -8,13 +8,7 @@
                  [com.cemerick/piggieback "0.2.1"]
                  [weasel "0.7.0"]
                  [org.clojure/tools.nrepl "0.2.12"]
-<<<<<<< HEAD
-                 ]
-=======
-                 [reagent "0.6.1" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server]]
-                 [re-frame "0.9.3"]]
->>>>>>> 8e994b071bcb4d2f0ca4c0241a884b40350d655a
- )
+                 ])
 
 (require '[adzerk.boot-cljs :refer [cljs]]
          '[adzerk.boot-reload :refer [reload]]
